@@ -1,0 +1,153 @@
+@import 'tailwindcss';
+
+/*
+  Say It Anyway — design tokens
+
+  An editorial, paper-like identity inspired by the ZERO ecosystem:
+  warm off-white paper, near-black ink, a signature electric-lime accent,
+  with deep purple and orange as restrained secondary accents. Type pairs
+  JetBrains Mono (labels, meta, numbering) with Inter (body + display).
+*/
+@theme {
+  --color-paper: #fafaf8; /* warm off-white base */
+  --color-paper-2: #f1f0ea; /* subtle raised fill */
+  --color-ink: #0b0b0c; /* near-black — primary ink */
+
+  --color-lime: #ccff00; /* signature accent (fills, YOU) */
+  --color-purple: #3b1b4e; /* secondary accent (THEM) */
+  --color-orange: #ff5c00; /* secondary accent (interruptions) */
+  --color-rust: #a33600; /* readable orange ink on paper */
+
+  --font-mono:
+    'JetBrains Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas,
+    monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* One consistent, high-contrast keyboard focus treatment across the app. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+/* Thin, unobtrusive scrollbars that match the paper theme. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(11, 11, 12, 0.25) transparent;
+}
+
+/* Oversized editorial display headlines: tight tracking, snug leading. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+/* Small mono label, uppercase with wide tracking — the ZERO signature. */
+.label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* Product surfaces: a shared table for two voices. */
+.app-shell { max-width: 1280px; margin: auto; padding: 0 40px; }
+button, select, a { -webkit-tap-highlight-color: transparent; }
+button, select { min-height: 44px; }
+button:not(:disabled), select { cursor: pointer; }
+button { touch-action: manipulation; }
+button:disabled { cursor: not-allowed; }
+::selection { background: var(--color-lime); color: var(--color-ink); }
+.skip-link { position: fixed; top: -80px; left: 20px; z-index: 100; padding: 14px 20px; background: var(--color-ink); color: var(--color-paper); }
+.skip-link:focus { top: 12px; }
+.brand-lockup { display: flex; align-items: center; gap: 20px; }
+.brand-reference { font-size: 29px; font-weight: 800; letter-spacing: -.06em; line-height: 1; }
+.brand-reference span { display: block; margin-top: 7px; font: 8px var(--font-mono); letter-spacing: .06em; }
+.product-wordmark { border-left: 1px solid #cecec8; padding-left: 20px; font-size: 16px; font-weight: 650; letter-spacing: -.03em; }
+.product-wordmark span { display: block; margin-top: 4px; font-size: 11px; font-weight: 400; letter-spacing: 0; color: #60605b; }
+.hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 60px; align-items: center; padding: 64px 0 54px; }
+.eyebrow { font: 10px/1.5 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: #5b5b56; }
+.hero-title { font-size: clamp(42px, 5.1vw, 68px); margin: 22px 0; line-height: 1.05; letter-spacing: -.065em; }
+.hero-highlight { background: var(--color-lime); box-decoration-break: clone; padding: 0 .08em .05em; }
+.hero-description { max-width: 430px; color: #52524d; font-size: 17px; line-height: 1.7; margin: 24px 0; }
+.primary-action { display: inline-flex; align-items: center; justify-content: space-between; gap: 28px; background: var(--color-ink); color: var(--color-paper); padding: 16px 22px; font-size: 13px; font-weight: 600; transition: background .15s; }
+.primary-action:hover { background: var(--color-purple); }
+.hero-caption { margin-top: 13px; font: 10px/1.6 var(--font-mono); color: #60605b; }
+.how-it-works { border-top: 2px solid var(--color-ink); padding-top: 18px; }
+.how-it-works li { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid #deded7; }
+.how-it-works li > span { font: 11px/1.8 var(--font-mono); color: #686861; }
+.how-it-works strong { font-size: 15px; font-weight: 600; }
+.how-it-works li p { margin-top: 5px; color: #60605b; font-size: 13px; line-height: 1.65; }
+.how-note { margin-top: 17px; color: var(--color-purple); font-size: 12px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 36px; padding: 30px 0 64px; border-top: 1px solid var(--color-ink); scroll-margin-top: 20px; }
+.workspace > section { min-width: 0; }
+.participants-section { grid-column: 1 / -1; }
+.participant-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: center; gap: 18px 24px; padding: 22px 24px; border: 1px solid #d4d4cc; border-top: 3px solid var(--color-lime); background: #f5f6ec; }
+.participant-them { border-top-color: var(--color-purple); background: #f3eff5; }
+.participant-panel > :first-child { grid-column: 1 / -1; }
+.participant-panel > :nth-child(2) { font-size: 32px; overflow-wrap: anywhere; line-height: 1.4; }
+.participant-panel > :nth-child(4), .participant-panel > :nth-child(5) { grid-column: 1 / -1; }
+.participant-panel select { font-size: 15px; }
+.participant-panel > * { min-width: 0; }
+.transcript-content { padding-top: 20px; }
+.empty-conversation { min-height: 370px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; background: var(--color-paper-2); border: 1px solid #e5e4dc; text-align: center; }
+.empty-conversation .display { font-size: clamp(30px, 4vw, 44px); }
+.empty-conversation button { background: transparent; color: var(--color-ink); border-bottom: 1px solid #85857e; padding: 10px 0; margin-top: 20px; }
+.empty-conversation button:hover { color: var(--color-purple); border-color: var(--color-purple); }
+.composer-section { align-self: start; position: sticky; top: 24px; }
+.composer { min-width: 0; }
+.translation-direction { padding: 10px 0 0; font: 12px/1.7 var(--font-mono); color: var(--color-purple); }
+.composer textarea { min-height: 150px; scroll-margin-block: 32px; }
+.composer-note { font-size: 12px; line-height: 1.65; color: #62625b; margin-top: 12px; }
+.interrupt-action { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px; border: 1px solid #bdb9b0; color: var(--color-rust); transition: background .15s; }
+.interrupt-action:hover:not(:disabled) { background: #fff0e4; border-color: var(--color-rust); }
+.interrupt-action:disabled { opacity: .5; }
+.message-item { position: relative; padding: 18px 20px 18px 24px; background: #f4f5eb; overflow-wrap: anywhere; }
+.message-them { background: #f3eff5; }
+.message-item p[lang] { white-space: pre-wrap; }
+.message-translation { margin-top: 18px; padding-top: 14px; border-top: 1px solid #d3d1ca; }
+.message-translation > .label { font-size: 10px; margin-bottom: 8px; }
+[data-phase] { min-height: 54px; border-left: 3px solid #84847b; }
+[data-phase='listening'], [data-phase='error'], [data-phase='interrupted'] { border-left-color: var(--color-rust); }
+[data-phase='translating'], [data-phase='speaking'] { border-left-color: var(--color-purple); }
+@media (max-width: 1000px) {
+  .hero { gap: 32px; }
+  .workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+  .brand-lockup { margin-bottom: 6px; }
+}
+@media (max-width: 767px) {
+  .app-shell { padding: 0 20px; }
+  .hero { grid-template-columns: 1fr; gap: 30px; padding: 38px 0; }
+  .hero-title { font-size: clamp(38px, 8.8vw, 64px); }
+  .hero-description { font-size: 16px; }
+  .how-it-works li { padding: 13px 0; }
+  .workspace { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .participant-panel { padding: 18px; gap: 14px; }
+  .composer-section { position: static; }
+  .empty-conversation { min-height: 240px; padding: 25px 18px; }
+  .empty-conversation .display { margin-top: 10px; }
+  .empty-conversation > p:nth-child(3) { margin-top: 12px; font-size: 14px; }
+  .product-wordmark span { max-width: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

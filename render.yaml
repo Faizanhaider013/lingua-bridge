@@ -1,0 +1,20 @@
+# Configuration only: no deployment is performed by this repository.
+services:
+  - type: web
+    name: say-it-anyway
+    runtime: node
+    plan: free
+    buildCommand: npm run build:deploy
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_FRONTEND
+        value: "true"
+      - key: VITE_API_BASE_URL
+        value: /api
+      - key: CORS_ORIGIN
+        sync: false
+      - key: TRANSLATION_PROVIDER
+        value: mymemory

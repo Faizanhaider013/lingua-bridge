@@ -1,0 +1,28 @@
+{
+  "name": "say-it-anyway-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Translation backend for Say It Anyway (Phase 2).",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/index.ts",
+    "start": "node --env-file-if-exists=.env src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.2"
+  },
+  "engines": {
+    "node": ">=24.13.1 <25",
+    "npm": ">=11 <12"
+  },
+  "packageManager": "npm@11.8.0"
+}

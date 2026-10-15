@@ -1,0 +1,10 @@
+# Dependencies
+node_modules
+
+# Real environment files — never commit secrets. The example stays tracked.
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log

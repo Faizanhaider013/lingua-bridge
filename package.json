@@ -1,0 +1,46 @@
+{
+  "name": "say-it-anyway",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "setup": "npm ci --include=dev && npm --prefix server ci --include=dev",
+    "dev:all": "node scripts/dev.mjs",
+    "test:all": "npm test && npm --prefix server test",
+    "typecheck": "tsc -b && npm --prefix server run typecheck",
+    "check": "npm run lint && npm run typecheck && npm run test:all && npm run build",
+    "start": "npm --prefix server start",
+    "build:deploy": "npm ci --include=dev && npm --prefix server ci --omit=dev && npm run build",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^1.57.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^27.4.0",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.4",
+    "@tailwindcss/vite": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "engines": {
+    "node": ">=24.13.1 <25",
+    "npm": ">=11 <12"
+  },
+  "packageManager": "npm@11.8.0"
+}

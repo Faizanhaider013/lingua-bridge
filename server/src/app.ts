@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import express, { type ErrorRequestHandler, type Request, type Response } from 'express'
-import type { ServerConfig } from './config.ts'
+import { normalizeOrigin, type ServerConfig } from './config.ts'
 import { ApiError } from './errors.ts'
 import { createTranslator, type TranslateParams } from './translate.ts'
 import { parseTranslateRequest } from './validation.ts'
@@ -30,11 +30,25 @@ export function createApp(config: ServerConfig, deps?: Partial<AppDeps>) {
     if (config.production) res.set('Strict-Transport-Security', 'max-age=31536000')
     next()
   })
-  const allowedOrigins = new Set(config.corsOrigin.split(',').map((origin) => origin.trim()))
+  // config.corsOrigin is already a list of canonical origins (see normalizeOrigin).
+  const allowedOrigins = new Set(config.corsOrigin.split(','))
   app.use('/api', (req, res, next) => {
     res.set('Cache-Control', 'no-store')
-    if (req.headers.origin && !allowedOrigins.has(req.headers.origin)) {
-      throw new ApiError(403, 'origin_denied', 'This website is not allowed to access the translation service.')
+    const requestOrigin = req.headers.origin
+    if (requestOrigin) {
+      // Match on the canonical form so a cosmetic difference (a browser always
+      // sends canonical, but be defensive) never produces a false rejection.
+      const canonical = normalizeOrigin(requestOrigin, false)
+      if (!allowedOrigins.has(requestOrigin) && !(canonical && allowedOrigins.has(canonical))) {
+        // Diagnostic: origins are public URLs, never secrets. Logs the received
+        // vs. configured origins so a mismatch is obvious in the host's logs.
+        console.warn(
+          `[cors] denied origin=${JSON.stringify(requestOrigin)} ` +
+            `normalized=${JSON.stringify(canonical)} ` +
+            `allowed=${JSON.stringify([...allowedOrigins])}`,
+        )
+        throw new ApiError(403, 'origin_denied', 'This website is not allowed to access the translation service.')
+      }
     }
     next()
   }, cors({ origin: [...allowedOrigins], methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'] }))

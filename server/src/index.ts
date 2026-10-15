@@ -1,7 +1,20 @@
+import type { ServerConfig } from './config.ts'
 import { createApp } from './app.ts'
 import { loadConfig } from './config.ts'
 
-const config = loadConfig()
+// Make a startup misconfiguration explicit in the host's logs. Without this, a
+// thrown config error (e.g. a missing/invalid CORS_ORIGIN in production) exits
+// with a stack trace and the platform simply reports "no server" — the exact
+// symptom seen when the deploy never becomes healthy. The message carries only
+// the reason (never secrets).
+let config: ServerConfig
+try {
+  config = loadConfig()
+} catch (err) {
+  console.error(`[startup] configuration error — server not started: ${(err as Error).message}`)
+  process.exit(1)
+}
+
 const app = createApp(config)
 
 const server = app.listen(config.port, '0.0.0.0', () => {
@@ -9,6 +22,9 @@ const server = app.listen(config.port, '0.0.0.0', () => {
     `Say It Anyway server listening on 0.0.0.0:${config.port} ` +
       `(provider: ${config.provider}, max ${config.maxTextLength} chars/message)`,
   )
+  // Allowed origins are public URLs, not secrets — log them so a CORS/origin
+  // mismatch is diagnosable from the deploy logs (see also the [cors] denial log).
+  console.log(`[startup] allowed origins: ${config.corsOrigin}`)
   if (config.provider === 'mymemory') {
     if (!config.myMemoryEmail) {
       console.log(

@@ -40,6 +40,29 @@ test('CORS allowlist, preflight and headers prevent unintended browser origins',
   })
 })
 
+test('a CORS_ORIGIN with a trailing slash still admits the deployed origin (production 403 regression)', async () => {
+  let reached = 0
+  // Reproduces the reported production misconfiguration: the env var carried a
+  // trailing slash. The server must normalise it, admit the exact browser
+  // origin, reach the provider, and still reject other origins.
+  await withApp(
+    { NODE_ENV: 'production', CORS_ORIGIN: 'https://lingua-bridge-q59l.onrender.com/' },
+    async () => { reached++; return 'Hola' },
+    async (base) => {
+      const origin = 'https://lingua-bridge-q59l.onrender.com'
+      const ok = await post(base, origin)
+      assert.equal(ok.status, 200)
+      assert.equal(ok.headers.get('access-control-allow-origin'), origin)
+      assert.equal(((await ok.json()) as { translatedText: string }).translatedText, 'Hola')
+      assert.equal(reached, 1, 'the request must reach the translation provider')
+
+      const denied = await post(base, 'https://attacker.example')
+      assert.equal(denied.status, 403)
+      assert.equal(await errorCode(denied), 'origin_denied')
+    },
+  )
+})
+
 test('body limit and global rate limit fail with structured errors', async () => {
   await withApp({ REQUESTS_PER_MINUTE: '2' }, async () => 'Hola', async (base) => {
     const large = await fetch(`${base}/api/translate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: 'a'.repeat(20_000) }) })

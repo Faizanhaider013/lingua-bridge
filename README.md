@@ -108,7 +108,7 @@ and its supplied `PORT`. [Render web services](https://render.com/docs/web-servi
 | `SERVE_FRONTEND` | Backend runtime | `true` for the combined service; `false` for API-only |
 | `VITE_API_BASE_URL` | Frontend build | `/api` for one service; public HTTPS backend URL ending in `/api` for split hosting |
 | `PORT` | Backend runtime | Provided by Render; do not hardcode. Local fallback is `8787` |
-| `CORS_ORIGIN` | Backend runtime | Required in production: comma-separated exact HTTPS frontend origins, no paths, wildcard or trailing slash |
+| `CORS_ORIGIN` | Backend runtime | Required in production: comma-separated HTTPS frontend origins. A trailing slash, path or mixed case is normalised to the canonical origin; wildcards, credentials and plain HTTP are rejected |
 | `TRANSLATION_PROVIDER` | Backend runtime | `mymemory` (default) |
 | `TRANSLATE_TIMEOUT_MS` | Backend runtime, optional | Default 10000, maximum 10000 per chunk |
 | `MAX_TEXT_LENGTH` | Backend runtime, optional | Default 2000 UTF-16 code units; body/chunk caps still apply |

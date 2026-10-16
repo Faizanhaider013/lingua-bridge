@@ -63,6 +63,31 @@ test('a CORS_ORIGIN with a trailing slash still admits the deployed origin (prod
   )
 })
 
+test('the exact production origin is admitted and a foreign origin is rejected (403 origin_denied)', async () => {
+  // Pins the reported production case verbatim: CORS_ORIGIN is set to the exact
+  // deployed origin — no trailing slash, no normalisation rescue — and the
+  // browser sends that same Origin. The request must pass origin authorization
+  // and reach the (mocked) translation provider; an unrelated origin must 403.
+  const origin = 'https://lingua-bridge-q59l.onrender.com'
+  let reached = 0
+  await withApp(
+    { NODE_ENV: 'production', CORS_ORIGIN: origin },
+    async () => { reached++; return 'Hola' },
+    async (base) => {
+      const ok = await post(base, origin)
+      assert.equal(ok.status, 200)
+      assert.equal(ok.headers.get('access-control-allow-origin'), origin)
+      assert.equal(((await ok.json()) as { translatedText: string }).translatedText, 'Hola')
+      assert.equal(reached, 1, 'the allowed origin must reach the translation provider')
+
+      const denied = await post(base, 'https://evil.example')
+      assert.equal(denied.status, 403)
+      assert.equal(await errorCode(denied), 'origin_denied')
+      assert.equal(reached, 1, 'a denied origin must never reach the provider')
+    },
+  )
+})
+
 test('body limit and global rate limit fail with structured errors', async () => {
   await withApp({ REQUESTS_PER_MINUTE: '2' }, async () => 'Hola', async (base) => {
     const large = await fetch(`${base}/api/translate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: 'a'.repeat(20_000) }) })

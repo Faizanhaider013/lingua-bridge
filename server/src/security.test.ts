@@ -88,6 +88,32 @@ test('the exact production origin is admitted and a foreign origin is rejected (
   )
 })
 
+test('a fully-qualified (trailing-dot) CORS_ORIGIN still admits the real browser origin', async () => {
+  // `URL.origin` preserves a trailing FQDN dot, so a CORS_ORIGIN of
+  // "https://host.com." used to be stored as a distinct string from the
+  // browser's "https://host.com" — a false mismatch that denied the legitimate
+  // origin while the diagnostic log looked all but identical (the lone trailing
+  // dot is easy to miss). normalizeOrigin now canonicalises the dot away.
+  const browserOrigin = 'https://lingua-bridge-q59l.onrender.com'
+  let reached = 0
+  await withApp(
+    { NODE_ENV: 'production', CORS_ORIGIN: 'https://lingua-bridge-q59l.onrender.com.' },
+    async () => { reached++; return 'Hola' },
+    async (base) => {
+      const ok = await post(base, browserOrigin)
+      assert.equal(ok.status, 200)
+      assert.equal(ok.headers.get('access-control-allow-origin'), browserOrigin)
+      assert.equal(((await ok.json()) as { translatedText: string }).translatedText, 'Hola')
+      assert.equal(reached, 1, 'the real browser origin must reach the translation provider')
+
+      const denied = await post(base, 'https://evil.example')
+      assert.equal(denied.status, 403)
+      assert.equal(await errorCode(denied), 'origin_denied')
+      assert.equal(reached, 1, 'a foreign origin must never reach the provider')
+    },
+  )
+})
+
 test('body limit and global rate limit fail with structured errors', async () => {
   await withApp({ REQUESTS_PER_MINUTE: '2' }, async () => 'Hola', async (base) => {
     const large = await fetch(`${base}/api/translate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: 'a'.repeat(20_000) }) })

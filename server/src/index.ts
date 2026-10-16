@@ -25,6 +25,9 @@ const server = app.listen(config.port, '0.0.0.0', () => {
   // Allowed origins are public URLs, not secrets — log them so a CORS/origin
   // mismatch is diagnosable from the deploy logs (see also the [cors] denial log).
   console.log(`[startup] allowed origins: ${config.corsOrigin}`)
+  // Prove which build is actually live. Render injects RENDER_GIT_COMMIT; this
+  // lets a log reader confirm the running commit instead of assuming it.
+  console.log(`[startup] commit: ${process.env.RENDER_GIT_COMMIT ?? 'unknown'}`)
   if (config.provider === 'mymemory') {
     if (!config.myMemoryEmail) {
       console.log(

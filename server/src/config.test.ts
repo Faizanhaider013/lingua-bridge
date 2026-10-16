@@ -22,6 +22,8 @@ test('CORS_ORIGIN is normalised to canonical origins (the production 403 root ca
     'https://lingua-bridge-q59l.onrender.com/api',
     'HTTPS://Lingua-Bridge-Q59L.onrender.com',
     '  https://lingua-bridge-q59l.onrender.com  ',
+    'https://lingua-bridge-q59l.onrender.com.',
+    'https://lingua-bridge-q59l.onrender.com./',
   ]) {
     const config = loadConfig({ NODE_ENV: 'production', CORS_ORIGIN: raw })
     assert.equal(config.corsOrigin, 'https://lingua-bridge-q59l.onrender.com')

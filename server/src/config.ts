@@ -49,8 +49,9 @@ function cleanString(value: string | undefined): string | undefined {
  * unparseable (including `*`), not HTTP(S), carrying credentials, or — when
  * `requireHttps` — not HTTPS.
  *
- * A trailing slash, a path or mixed case are normalised rather than rejected,
- * so an origin pasted from the browser address bar (e.g. `https://app.example/`)
+ * A trailing slash, a path, mixed case or a fully-qualified trailing dot are
+ * normalised rather than rejected, so an origin pasted from the browser address
+ * bar (e.g. `https://app.example/`) or copied in FQDN form (`https://app.example.`)
  * still resolves to the correct origin instead of failing validation. This is
  * safe: the matcher only ever compares the canonical origin, which is all a
  * browser's `Origin` header ever contains.
@@ -65,7 +66,13 @@ export function normalizeOrigin(value: string, requireHttps: boolean): string | 
   if (!['http:', 'https:'].includes(url.protocol)) return null
   if (url.username || url.password) return null
   if (requireHttps && url.protocol !== 'https:') return null
-  return url.origin
+  // `URL.origin` preserves a trailing FQDN dot (`host.com.`), but that denotes
+  // the same host as `host.com` and a browser's `Origin` header never carries
+  // it. Rebuild the origin from a dot-stripped hostname so a configured FQDN
+  // origin cannot produce a false mismatch against the real browser origin.
+  const hostname = url.hostname.replace(/\.+$/, '')
+  if (!hostname) return null
+  return `${url.protocol}//${url.port ? `${hostname}:${url.port}` : hostname}`
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {

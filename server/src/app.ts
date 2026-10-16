@@ -13,6 +13,17 @@ export interface AppDeps {
   translate: (params: TranslateParams) => Promise<string>
 }
 
+/**
+ * Renders a string as lowercase hex code points (e.g. `68.74.74.70`) so a log
+ * reader can tell apart two values that look identical but are not — an
+ * invisible/format character or a trailing dot that a terminal hides. Only used
+ * on the origin-denial path, where the values are public origins, never secrets.
+ */
+function codepoints(value: string | null): string {
+  if (value === null) return 'null'
+  return [...value].map((c) => c.codePointAt(0)!.toString(16)).join('.')
+}
+
 export function createApp(config: ServerConfig, deps?: Partial<AppDeps>) {
   const translator = createTranslator(config)
   const translate = deps?.translate ?? translator.translate
@@ -42,10 +53,14 @@ export function createApp(config: ServerConfig, deps?: Partial<AppDeps>) {
       if (!allowedOrigins.has(requestOrigin) && !(canonical && allowedOrigins.has(canonical))) {
         // Diagnostic: origins are public URLs, never secrets. Logs the received
         // vs. configured origins so a mismatch is obvious in the host's logs.
+        // `codepoints` renders each character's code so a mismatch that *looks*
+        // identical (an invisible/format character, a trailing dot) is still
+        // unambiguous — the plain strings can print identically when they differ.
         console.warn(
           `[cors] denied origin=${JSON.stringify(requestOrigin)} ` +
             `normalized=${JSON.stringify(canonical)} ` +
-            `allowed=${JSON.stringify([...allowedOrigins])}`,
+            `allowed=${JSON.stringify([...allowedOrigins])} ` +
+            `codepoints={normalized:${codepoints(canonical)},allowed:${[...allowedOrigins].map(codepoints).join('|')}}`,
         )
         throw new ApiError(403, 'origin_denied', 'This website is not allowed to access the translation service.')
       }

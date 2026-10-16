@@ -50,17 +50,27 @@ export function createApp(config: ServerConfig, deps?: Partial<AppDeps>) {
       // Match on the canonical form so a cosmetic difference (a browser always
       // sends canonical, but be defensive) never produces a false rejection.
       const canonical = normalizeOrigin(requestOrigin, false)
-      if (!allowedOrigins.has(requestOrigin) && !(canonical && allowedOrigins.has(canonical))) {
+      // Compute the exact booleans the decision is made from, so the denial log
+      // reports the real authorization inputs — not values re-derived for the
+      // log. `allow` IS the 403 condition, negated.
+      const hasRaw = allowedOrigins.has(requestOrigin)
+      const hasCanonical = canonical !== null && allowedOrigins.has(canonical)
+      const allow = hasRaw || hasCanonical
+      if (!allow) {
         // Diagnostic: origins are public URLs, never secrets. Logs the received
-        // vs. configured origins so a mismatch is obvious in the host's logs.
-        // `codepoints` renders each character's code so a mismatch that *looks*
-        // identical (an invisible/format character, a trailing dot) is still
-        // unambiguous — the plain strings can print identically when they differ.
+        // vs. configured origins, the actual boolean results, value types and
+        // per-entry code points so a mismatch that *looks* identical (an
+        // invisible/format character, a trailing dot) is still unambiguous —
+        // the plain strings can print identically when they differ.
+        const entries = [...allowedOrigins]
         console.warn(
           `[cors] denied origin=${JSON.stringify(requestOrigin)} ` +
             `normalized=${JSON.stringify(canonical)} ` +
-            `allowed=${JSON.stringify([...allowedOrigins])} ` +
-            `codepoints={normalized:${codepoints(canonical)},allowed:${[...allowedOrigins].map(codepoints).join('|')}}`,
+            `allowed=${JSON.stringify(entries)} ` +
+            `booleans={hasRaw:${hasRaw},hasCanonical:${hasCanonical},rawEqCanonical:${requestOrigin === canonical}} ` +
+            `types={requestOrigin:${typeof requestOrigin},canonical:${typeof canonical},entries:[${entries.map((e) => typeof e).join(',')}]} ` +
+            `lengths={requestOrigin:${requestOrigin.length},canonical:${canonical === null ? 'null' : canonical.length},entries:[${entries.map((e) => e.length).join(',')}]} ` +
+            `codepoints={requestOrigin:${codepoints(requestOrigin)},normalized:${codepoints(canonical)},allowed:${entries.map(codepoints).join('|')}}`,
         )
         throw new ApiError(403, 'origin_denied', 'This website is not allowed to access the translation service.')
       }
